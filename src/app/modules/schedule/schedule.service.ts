@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import { addHours, addMinutes, format } from "date-fns";
+import { paginationHelper } from "../../helper/paginationHelper";
 import { prisma } from "../../shared/prisma";
 
 const insertIntoDB = async (payload: any) => {
@@ -62,8 +64,84 @@ const insertIntoDB = async (payload: any) => {
   return schedules;
 };
 
-const scheduleForDoctors = async () => {
-  console.log("hit");
+const scheduleForDoctors = async (user: any, filter: any, options: any) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
+  const { startDateTime: filterStartDateTime, endDateTime: filterEndDateTime } =
+    filter;
+
+  const andConditions: Prisma.ScheduleWhereInput[] = [];
+
+  if (filterStartDateTime && filterEndDateTime) {
+    andConditions.push({
+      AND: [
+        {
+          startDateTime: {
+            gte: filterStartDateTime,
+          },
+        },
+        {
+          endDateTime: {
+            lte: filterEndDateTime,
+          },
+        },
+      ],
+    });
+  }
+
+  const whereConditions: Prisma.ScheduleWhereInput =
+    andConditions.length > 0
+      ? {
+          AND: andConditions,
+        }
+      : {};
+
+  const doctorSchedules = await prisma.doctorSchedule.findMany({
+    where: {
+      doctor: {
+        email: user.email,
+      },
+    },
+    select: {
+      scheduleId: true,
+    },
+  });
+
+  const doctorScheduleIds = doctorSchedules.map(
+    (schedule) => schedule.scheduleId
+  );
+
+  const result = await prisma.schedule.findMany({
+    where: {
+      ...whereConditions,
+      id: {
+        notIn: doctorScheduleIds,
+      },
+    },
+    skip,
+    take: limit,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+  });
+
+  const total = await prisma.schedule.count({
+    where: {
+      ...whereConditions,
+      id: {
+        notIn: doctorScheduleIds,
+      },
+    },
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
 };
 
 export const ScheduleService = { insertIntoDB, scheduleForDoctors };
