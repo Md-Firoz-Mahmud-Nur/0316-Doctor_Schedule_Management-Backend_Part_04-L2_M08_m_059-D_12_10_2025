@@ -3,14 +3,12 @@ import { prisma } from "../../shared/prisma";
 
 const insertIntoDB = async (payload: any) => {
   const { startDate, endDate, startTime, endTime } = payload;
-  console.log(startDate, endDate, startTime, endTime);
 
   const intervalTime = 30;
+  const schedules = [];
 
   const currentDate = new Date(startDate);
   const lastDate = new Date(endDate);
-
-  console.log(currentDate, lastDate);
 
   while (currentDate <= lastDate) {
     const startDateTime = new Date(
@@ -22,8 +20,6 @@ const insertIntoDB = async (payload: any) => {
         Number(startTime.split(":")[1])
       )
     );
-
-    console.log(startDateTime);
 
     const endDateTime = new Date(
       addMinutes(
@@ -52,13 +48,18 @@ const insertIntoDB = async (payload: any) => {
         const result = await prisma.schedule.create({
           data: scheduleData,
         });
+        schedules.push(result);
       }
+
+      slotStartDateTime.setMinutes(
+        slotStartDateTime.getMinutes() + intervalTime
+      );
     }
 
-    console.log(endDateTime);
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  return payload;
+  return schedules;
 };
 
 export const ScheduleService = { insertIntoDB };
