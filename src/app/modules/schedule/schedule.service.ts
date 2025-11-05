@@ -9,7 +9,7 @@ const insertIntoDB = async (payload: any) => {
   const intervalTime = 30;
   const schedules = [];
 
-  const currentDate = new Date(startDate);
+  let currentDate = new Date(startDate);
   const lastDate = new Date(endDate);
 
   while (currentDate <= lastDate) {
@@ -26,16 +26,17 @@ const insertIntoDB = async (payload: any) => {
     const endDateTime = new Date(
       addMinutes(
         addHours(
-          `${format(lastDate, "yyyy-MM-dd")}`,
+          `${format(currentDate, "yyyy-MM-dd")}`,
           Number(endTime.split(":")[0])
         ),
         Number(endTime.split(":")[1])
       )
     );
 
-    while (startDateTime < endDateTime) {
-      const slotStartDateTime = startDateTime;
-      const slotEndDateTime = addMinutes(startDateTime, intervalTime);
+    let slotStartDateTime = new Date(startDateTime);
+
+    while (slotStartDateTime < endDateTime) {
+      const slotEndDateTime = addMinutes(slotStartDateTime, intervalTime);
 
       const scheduleData = {
         startDateTime: slotStartDateTime,
@@ -60,7 +61,6 @@ const insertIntoDB = async (payload: any) => {
 
     currentDate.setDate(currentDate.getDate() + 1);
   }
-
   return schedules;
 };
 
