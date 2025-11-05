@@ -1,7 +1,8 @@
 import { prisma } from "../../shared/prisma";
+import { IJWTPayload } from "../../types/common";
 
 const insertIntoDB = async (
-  user: any,
+  user: IJWTPayload,
   payload: {
     scheduleIds: string[];
   }
