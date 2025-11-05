@@ -9,7 +9,7 @@ const insertIntoDB = async (payload: any) => {
   const intervalTime = 30;
   const schedules = [];
 
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
   const lastDate = new Date(endDate);
 
   while (currentDate <= lastDate) {
@@ -33,13 +33,12 @@ const insertIntoDB = async (payload: any) => {
       )
     );
 
-    let slotStartDateTime = new Date(startDateTime);
-
-    while (slotStartDateTime < endDateTime) {
-      const slotEndDateTime = addMinutes(slotStartDateTime, intervalTime);
+    while (startDateTime < endDateTime) {
+      const slotStartDateTime = startDateTime;
+      const slotEndDateTime = addMinutes(startDateTime, intervalTime);
 
       const scheduleData = {
-        startDateTime: slotStartDateTime,
+        startDateTime: startDateTime,
         endDateTime: slotEndDateTime,
       };
 
@@ -144,4 +143,16 @@ const scheduleForDoctors = async (user: any, filter: any, options: any) => {
   };
 };
 
-export const ScheduleService = { insertIntoDB, scheduleForDoctors };
+const deleteScheduleFromDB = async (id: string) => {
+  return await prisma.schedule.delete({
+    where: {
+      id,
+    },
+  })
+};
+
+export const ScheduleService = {
+  insertIntoDB,
+  scheduleForDoctors,
+  deleteScheduleFromDB,
+};
