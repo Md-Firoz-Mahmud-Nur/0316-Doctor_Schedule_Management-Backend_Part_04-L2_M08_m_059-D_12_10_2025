@@ -1,4 +1,5 @@
 import { addHours, addMinutes, format } from "date-fns";
+import { prisma } from "../../shared/prisma";
 
 const insertIntoDB = async (payload: any) => {
   const { startDate, endDate, startTime, endTime } = payload;
@@ -33,6 +34,26 @@ const insertIntoDB = async (payload: any) => {
         Number(endTime.split(":")[1])
       )
     );
+
+    while (startDateTime < endDateTime) {
+      const slotStartDateTime = startDateTime;
+      const slotEndDateTime = addMinutes(startDateTime, intervalTime);
+
+      const scheduleData = {
+        startDateTime: slotStartDateTime,
+        endDateTime: slotEndDateTime,
+      };
+
+      const existingSchedule = await prisma.schedule.findFirst({
+        where: scheduleData,
+      });
+
+      if (!existingSchedule) {
+        const result = await prisma.schedule.create({
+          data: scheduleData,
+        });
+      }
+    }
 
     console.log(endDateTime);
   }
