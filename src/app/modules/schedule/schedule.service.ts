@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { addHours, addMinutes, format } from "date-fns";
 import { paginationHelper } from "../../helper/paginationHelper";
 import { prisma } from "../../shared/prisma";
+import { IJWTPayload } from "../../types/common";
 
 const insertIntoDB = async (payload: any) => {
   const { startDate, endDate, startTime, endTime } = payload;
@@ -63,7 +64,11 @@ const insertIntoDB = async (payload: any) => {
   return schedules;
 };
 
-const scheduleForDoctors = async (user: any, filter: any, options: any) => {
+const scheduleForDoctors = async (
+  user: IJWTPayload,
+  filter: any,
+  options: any
+) => {
   const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(options);
   const { startDateTime: filterStartDateTime, endDateTime: filterEndDateTime } =
@@ -148,7 +153,7 @@ const deleteScheduleFromDB = async (id: string) => {
     where: {
       id,
     },
-  })
+  });
 };
 
 export const ScheduleService = {

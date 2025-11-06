@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import pick from "../../helper/pick";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
+import { IJWTPayload } from "../../types/common";
 import { ScheduleService } from "./schedule.service";
 
 const insertIntoDB = catchAsync(async (req: Request, res: Response) => {
@@ -16,14 +17,14 @@ const insertIntoDB = catchAsync(async (req: Request, res: Response) => {
 });
 
 const scheduleForDoctors = catchAsync(
-  async (req: Request & { user?: any }, res: Response) => {
+  async (req: Request & { user?: IJWTPayload }, res: Response) => {
     const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
     const fillter = pick(req.query, ["startDateTime", "endDateTime"]);
 
     const user = req.user;
 
     const result = await ScheduleService.scheduleForDoctors(
-      user,
+      user as IJWTPayload,
       fillter,
       options
     );
@@ -53,4 +54,8 @@ const deleteScheduleFromDB = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const ScheduleController = { insertIntoDB, scheduleForDoctors,deleteScheduleFromDB };
+export const ScheduleController = {
+  insertIntoDB,
+  scheduleForDoctors,
+  deleteScheduleFromDB,
+};

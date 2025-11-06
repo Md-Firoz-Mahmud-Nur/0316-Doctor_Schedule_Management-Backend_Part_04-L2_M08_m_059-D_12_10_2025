@@ -5,7 +5,11 @@ import { ScheduleController } from "./schedule.controller";
 
 const router = express.Router();
 
-router.get("/", auth(UserRole.DOCTOR), ScheduleController.scheduleForDoctors);
+router.get(
+  "/",
+  auth(UserRole.DOCTOR, UserRole.ADMIN),
+  ScheduleController.scheduleForDoctors
+);
 
 router.post("/", ScheduleController.insertIntoDB);
 
